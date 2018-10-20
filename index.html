@@ -153,11 +153,15 @@
     ], function(
       Map, MapView, Graphic, ScreenPoint, WebMap
     ) {
-
+      var myLat = null
+      var myLon = null
       // get my location
       navigator.geolocation.getCurrentPosition((pos) => {
+        myLat = pos.coords.latitude
+        myLon = pos.coords.longitude
         console.log('position.coords.latitude = ' + pos.coords.latitude)
         console.log('position.coords.longitude = ' + pos.coords.longitude)
+        view.center = [myLon, myLat]
       }, (err) => {
         switch(error.code) {
           case error.PERMISSION_DENIED:
@@ -186,7 +190,7 @@
         center: [-80, 35],
         container: "viewDiv",
         map: webmap,
-        zoom: 3
+        zoom: 14
       });
       
       view.on("click", (event)=> {
