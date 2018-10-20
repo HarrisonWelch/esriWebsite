@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html>  
 <head> 
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   
   <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
   <title>Basemap gallery</title>
-  <link rel="stylesheet" href="https://js.arcgis.com/3.26/dijit/themes/claro/claro.css">    
-  <link rel="stylesheet" href="https://js.arcgis.com/3.26/esri/css/esri.css">
+  <link rel="stylesheet" href="https://js.arcgis.com/4.9/esri/css/main.css">
+  <script src="https://js.arcgis.com/4.9/"></script>
   <style> 
     html, body { height: 100%; width: 100%; margin: 0; padding: 0; }
     #map{
@@ -14,7 +14,6 @@
     }
   </style> 
   
-  <script src="https://js.arcgis.com/3.26/"></script>
   <script> 
     var map;
     require([
@@ -42,28 +41,41 @@
       
       cache = null;
 
+      function printAllObject(obj) {
+        for ( var i = 0; i < Object.keys(event).length; i++){
+          console.log('evt = ' + Object.keys(event)[i])
+          if (Object.keys( Object.keys(event)[i]).length  > 0){
+            printAllObject(obj[i])
+          }
+        }
+      }
+
       function myClickHandler(event) {
         // ...
         console.log('myClickHandler myClickHandler myClickHandler')
         var cache = [];
-        console.log('evt = ' + JSON.stringify(event, function(key, value) {
-          if (typeof value === 'object' && value !== null) {
-            if (cache.indexOf(value) !== -1) {
-              // Duplicate reference found
-              try {
-                // If this value does not reference a parent it can be deduped
-                return JSON.parse(JSON.stringify(value));
-              } catch (error) {
-                // discard key if value cannot be deduped
-                return;
-              }
-            }
-            // Store value in our collection
-            cache.push(value);
-          }
-          return value;
-        }, 2))
-        cache = null;
+        // console.log('event.x = ' + event.x)
+        require([
+            "esri/geometry/Point", "esri/symbols/SimpleMarkerSymbol",
+            "esri/Color", "esri/InfoTemplate", "esri/graphic" 
+          ], function(Point, SimpleMarkerSymbol, Color, InfoTemplate, Graphic) {
+            var pt = new Point(event.mapPoint.x,event.mapPoint.y,map.spatialReference)
+            var sms = new SimpleMarkerSymbol().setStyle(
+              SimpleMarkerSymbol.STYLE_SQUARE).setColor(
+              new Color([255,0,0,0.5]));
+            var attr = {"Xcoord":event.mapPoint.x,"Ycoord":event.mapPoint.y,"Plant":"Mesa Mint"};
+            var infoTemplate = new InfoTemplate("Vernal Pool Locations","Latitude: ${Ycoord} <br/>Longitude: ${Xcoord} <br/>Plant Name:${Plant}");
+            var graphic = new Graphic(pt,sms,attr,infoTemplate);
+          });
+        // require([
+        //     "esri/geometry/Point", "esri/SpatialReference"
+        //   ], function(Point, SpatialReference) {
+        //     var p1 = new Point(event.mapPoint.x, event.mapPoint.y, new SpatialReference({ wkid: 4326 }));
+        //     var p2 = new Point(event.mapPoint.y, event.mapPoint.x, new SpatialReference({ wkid: 4326 }));
+        //     map.graphics.add(p1)
+        //     map.graphics.add(p2)
+        // });
+        
         alert("User clicked at " +
           event.screenPoint.x + ", " + event.screenPoint.y +
           " on the screen. The map coordinate at this point is " +
@@ -107,5 +119,176 @@
     </div>
   </div>
 </body> 
+
+</html> -->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>Intro to graphics - 4.9</title>
+
+  <link rel="stylesheet" href="https://js.arcgis.com/4.9/esri/css/main.css">
+  <script src="https://js.arcgis.com/4.9/"></script>
+
+  <style>
+    html,
+    body,
+    #viewDiv {
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      width: 100%;
+    }
+  </style>
+
+  <script>
+    require([
+      "esri/Map",
+      "esri/views/MapView",
+      "esri/Graphic"
+    ], function(
+      Map, MapView, Graphic
+    ) {
+
+      var map = new Map({
+        basemap: "topo"
+      });
+
+      var view = new MapView({
+        center: [-80, 35],
+        container: "viewDiv",
+        map: map,
+        zoom: 3
+      });
+      
+      view.on("pointer-down", (event)=> {
+        console.log('Harrison Welch')
+        console.log(JSON.stringify(event.x, null, 2))
+        console.log(JSON.stringify(event.y, null, 2))
+      });
+
+      /*************************
+       * Create a point graphic
+       *************************/
+
+      // First create a point geometry (this is the location of the Titanic)
+      var point = {
+        type: "point", // autocasts as new Point()
+        longitude: -49.97,
+        latitude: 41.73
+      };
+
+      // Create a symbol for drawing the point
+      var markerSymbol = {
+        type: "simple-marker", // autocasts as new SimpleMarkerSymbol()
+        color: [226, 119, 40],
+        outline: { // autocasts as new SimpleLineSymbol()
+          color: [255, 255, 255],
+          width: 2
+        }
+      };
+
+      // Create a graphic and add the geometry and symbol to it
+      var pointGraphic = new Graphic({
+        geometry: point,
+        symbol: markerSymbol
+      });
+
+      /****************************
+       * Create a polyline graphic
+       ****************************/
+
+      // First create a line geometry (this is the Keystone pipeline)
+      var polyline = {
+        type: "polyline", // autocasts as new Polyline()
+        paths: [
+          [-111.30, 52.68],
+          [-98, 49.5],
+          [-93.94, 29.89]
+        ]
+      };
+
+      // Create a symbol for drawing the line
+      var lineSymbol = {
+        type: "simple-line", // autocasts as SimpleLineSymbol()
+        color: [226, 119, 40],
+        width: 4
+      };
+
+      // Create an object for storing attributes related to the line
+      var lineAtt = {
+        Name: "Keystone Pipeline",
+        Owner: "TransCanada",
+        Length: "3,456 km"
+      };
+
+      /*******************************************
+       * Create a new graphic and add the geometry,
+       * symbol, and attributes to it. You may also
+       * add a simple PopupTemplate to the graphic.
+       * This allows users to view the graphic's
+       * attributes when it is clicked.
+       ******************************************/
+      var polylineGraphic = new Graphic({
+        geometry: polyline,
+        symbol: lineSymbol,
+        attributes: lineAtt,
+        popupTemplate: { // autocasts as new PopupTemplate()
+          title: "{Name}",
+          content: [{
+            type: "fields",
+            fieldInfos: [{
+              fieldName: "Name"
+            }, {
+              fieldName: "Owner"
+            }, {
+              fieldName: "Length"
+            }]
+          }]
+        }
+      });
+
+      /***************************
+       * Create a polygon graphic
+       ***************************/
+
+      // Create a polygon geometry
+      var polygon = {
+        type: "polygon", // autocasts as new Polygon()
+        rings: [
+          [-64.78, 32.3],
+          [-66.07, 18.45],
+          [-80.21, 25.78],
+          [-64.78, 32.3]
+        ]
+      };
+
+      // Create a symbol for rendering the graphic
+      var fillSymbol = {
+        type: "simple-fill", // autocasts as new SimpleFillSymbol()
+        color: [227, 139, 79, 0.8],
+        outline: { // autocasts as new SimpleLineSymbol()
+          color: [255, 255, 255],
+          width: 1
+        }
+      };
+
+      // Add the geometry and symbol to a new graphic
+      var polygonGraphic = new Graphic({
+        geometry: polygon,
+        symbol: fillSymbol
+      });
+
+      // Add the graphics to the view's graphics layer
+      view.graphics.addMany([pointGraphic, polylineGraphic, polygonGraphic]);
+    });
+  </script>
+</head>
+
+<body>
+  <div id="viewDiv"></div>
+</body>
 
 </html>
