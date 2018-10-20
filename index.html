@@ -147,9 +147,11 @@
     require([
       "esri/Map",
       "esri/views/MapView",
-      "esri/Graphic"
+      "esri/Graphic",
+      "esri/geometry/ScreenPoint",
+      "esri/WebMap"
     ], function(
-      Map, MapView, Graphic
+      Map, MapView, Graphic, ScreenPoint, WebMap
     ) {
 
       var map = new Map({
@@ -165,8 +167,38 @@
       
       view.on("pointer-down", (event)=> {
         console.log('Harrison Welch')
-        console.log(JSON.stringify(event.x, null, 2))
-        console.log(JSON.stringify(event.y, null, 2))
+        console.log("x = " + JSON.stringify(event.x, null, 2))
+        console.log("y = " + JSON.stringify(event.y, null, 2))
+        console.log("event = " + JSON.stringify(event, null, 2))
+        var sp = new ScreenPoint({
+          x: event.x,
+          y: event.y
+        })
+        var latLng = view.toMap(sp)
+        console.log('latLng = ' + JSON.stringify(latLng, null, 2))
+        var point = {
+          type: "point", // autocasts as new Point()
+          longitude: -49.97,
+          latitude: 41.73
+        };
+        // Create a symbol for drawing the point
+        var markerSymbol = {
+          type: "simple-marker", // autocasts as new SimpleMarkerSymbol()
+          color: [226, 119, 40],
+          outline: { // autocasts as new SimpleLineSymbol()
+            color: [255, 255, 255],
+            width: 2
+          }
+        };
+
+        // Create a graphic and add the geometry and symbol to it
+        var pointGraphic = new Graphic({
+          geometry: point,
+          symbol: markerSymbol
+        });
+
+        // add the point
+        view.graphics.addMany([pointGraphic])
       });
 
       /*************************
