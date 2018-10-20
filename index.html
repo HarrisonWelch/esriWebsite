@@ -154,32 +154,28 @@
       Map, MapView, Graphic, ScreenPoint, WebMap
     ) {
 
-      var map = new Map({
-        basemap: "topo"
+      var webmap = new WebMap({
+        basemap: 'topo'
       });
 
       var view = new MapView({
         center: [-80, 35],
         container: "viewDiv",
-        map: map,
+        map: webmap,
         zoom: 3
       });
       
-      view.on("pointer-down", (event)=> {
+      view.on("click", (event)=> {
         console.log('Harrison Welch')
+        console.log("mapPoint = " + JSON.stringify(event.mapPoint, null, 2))
+        console.log("map x map y = " + event.mapPoint.latitude + " y: " + event.mapPoint.longitude);
         console.log("x = " + JSON.stringify(event.x, null, 2))
         console.log("y = " + JSON.stringify(event.y, null, 2))
         console.log("event = " + JSON.stringify(event, null, 2))
-        var sp = new ScreenPoint({
-          x: event.x,
-          y: event.y
-        })
-        var latLng = view.toMap(sp)
-        console.log('latLng = ' + JSON.stringify(latLng, null, 2))
         var point = {
           type: "point", // autocasts as new Point()
-          longitude: -49.97,
-          latitude: 41.73
+          longitude: event.mapPoint.longitude,
+          latitude: event.mapPoint.latitude
         };
         // Create a symbol for drawing the point
         var markerSymbol = {
